@@ -1,6 +1,9 @@
 name = "generative_terrain"
 authors = ["Benjamin Cox"]
-[compat]
-julia = "1.4.2"
+
 [deps]
 DrWatson = "634d3b9d-ee7a-5ddf-bec9-22491ea816e1"
+MurmurHash3 = "b10b62ed-fbae-5ea5-b934-abaf0477b71d"
+
+[compat]
+julia = "1.4.2"

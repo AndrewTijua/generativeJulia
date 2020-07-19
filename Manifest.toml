@@ -37,6 +37,11 @@ uuid = "56ddb016-857b-54e1-b83d-db4d58db5568"
 deps = ["Base64"]
 uuid = "d6f4376e-aef5-505a-96c1-9c027394607a"
 
+[[MurmurHash3]]
+git-tree-sha1 = "0846ba998e3a09b286aaeb6e6538d6829f1c3948"
+uuid = "b10b62ed-fbae-5ea5-b934-abaf0477b71d"
+version = "1.0.3"
+
 [[Pkg]]
 deps = ["Dates", "LibGit2", "Libdl", "Logging", "Markdown", "Printf", "REPL", "Random", "SHA", "UUIDs"]
 uuid = "44cfe95a-1eb2-52ea-b672-e2afdf69b78f"
