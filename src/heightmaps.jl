@@ -1,5 +1,6 @@
 using Random
 include("osn.jl")
+include("exp_noise.jl")
 
 mutable struct heightmap
     name::String
@@ -38,6 +39,39 @@ end
 function cubic_noise_map!(hm::heightmap, scale::Float64 = 0.2, octaves::Int64 = 5, falloff::Float64 = 2.0)
     dims = size(hm.map)
     hm.map = generate_noisemap(dims, scale, octaves, falloff, hm.seed)
+    return hm
+end
+
+function xorshift(x::Int64, s1::Int64, s2::Int64, s3::Int64)::Int64
+    o = x
+    o ⊻= (o << s1)
+    o ⊻= (o >> s2)
+    o ⊻= (o << s3)
+    return o
+end
+
+function exp_noise_map!(hm::heightmap, octave_0::Int64 = 1, octave_1::Int64 = 4, falloff::Float64 = 2.0, omega::Float64 = 0.5, coords::NTuple{2, Int64} = (1, 1))
+    @assert 0. <= omega <= 1.
+    @assert 0 < octave_0 <= octave_1
+    @assert falloff > 0.
+    dims = size(hm.map)
+    @assert dims[1] == dims[2]
+    @assert floor(log2(dims[1])) == log2(dims[1])
+    seed_1 = xorshift(hm.seed, 8, 31, 17)
+    seed_2 = xorshift(hm.seed, 13, 17, 5)
+    hm.map = AMN_EXP_2D_grid(coords, seed_1, seed_2, omega, 1. / falloff, octave_0, octave_1, dims[1])
+    return hm
+end
+
+function amortised_noise_map!(hm::heightmap, octave_0::Int64 = 1, octave_1::Int64 = 4, falloff::Float64 = 2.0, coords::NTuple{2, Int64} = (1, 1))
+    @assert 0 < octave_0 <= octave_1
+    @assert falloff > 0.
+    dims = size(hm.map)
+    @assert dims[1] == dims[2]
+    @assert floor(log2(dims[1])) == log2(dims[1])
+    seed_1 = xorshift(hm.seed, 8, 31, 17)
+    seed_2 = xorshift(hm.seed, 13, 17, 5)
+    hm.map = AMN_EXP_2D_grid(coords, seed_1, seed_2, 0.5, 1. / falloff, octave_0, octave_1, dims[1])
     return hm
 end
 
