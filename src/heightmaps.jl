@@ -34,7 +34,7 @@ function island_gradient(dims::NTuple{2,Int64}, sharpness::Float64, origin::NTup
         end
     elseif method == "square"
         for col = 1:dims[2], row = 1:dims[1]
-            grad_map[row, col] = max((col - origin[2])^2, (row - origin[1])^2)
+            grad_map[row, col] = - max((col - origin[2])^2, (row - origin[1])^2)
         end
     else
         ArgumentError("No such method exists")
@@ -128,4 +128,66 @@ function norm_map!(hm::Array{Float64,2})
     h_max = maximum(hm)
     hm ./= h_max
     return hm
+end
+
+function surface_normals(hm::heightmap)
+    map = hm.map
+    dims = size(map)
+    vecmap = Array{Float64, 3}(undef, dims[1], dims[2], 3)
+    #precalc edges to avoid errors
+    for i = 1:dims[1]
+        vecmap[i,1,:] = [0., 0., 1.]
+        vecmap[i,dims[2],:] = [0., 0., 1.]
+    end
+    for i = 1:dims[2]
+        vecmap[1,i,:] = [0., 0., 1.]
+        vecmap[dims[2],i,:] = [0., 0., 1.]
+    end
+
+    #first order approximation for normals
+    for x = 2:(dims[1]-1)
+        for y = 2:(dims[2]-1)
+            left_z = map[x-1,y]
+            right_z = map[x+1,y]
+            top_z = map[x,y+1]
+            bottom_z = map[x-1,y-1]
+            lrd = 0.5 * (left_z - right_z)
+            tbd = 0.5 * (top_z - bottom_z)
+            tm = [lrd, tbd, 1.]
+            tm ./= sqrt(sum(tm.^2))
+            vecmap[x,y,:] = tm
+        end
+    end
+    return vecmap
+end
+
+function surface_normals(hm::Array{Float64,2})
+    map = hm
+    dims = size(map)
+    vecmap = Array{Float64, 3}(undef, dims[1], dims[2], 3)
+    #precalc edges to avoid errors
+    for i = 1:dims[1]
+        vecmap[i,1,:] = [0., 0., 1.]
+        vecmap[i,dims[2],:] = [0., 0., 1.]
+    end
+    for i = 1:dims[2]
+        vecmap[1,i,:] = [0., 0., 1.]
+        vecmap[dims[2],i,:] = [0., 0., 1.]
+    end
+
+    #first order approximation for normals
+    for x = 2:(dims[1]-1)
+        for y = 2:(dims[2]-1)
+            left_z = map[x-1,y]
+            right_z = map[x+1,y]
+            top_z = map[x,y+1]
+            bottom_z = map[x-1,y-1]
+            lrd = 0.5 * (left_z - right_z)
+            tbd = 0.5 * (top_z - bottom_z)
+            tm = [lrd, tbd, 1.]
+            tm ./= sqrt(sum(tm.^2))
+            vecmap[x,y,:] = tm
+        end
+    end
+    return vecmap
 end
